@@ -14,6 +14,7 @@ export interface OrgTreeProps {
   data: TreeNode[];
   width?: number;
   height?: number;
+  onClick?: (node: TreeNode | null) => void;
 }
 
 const convertTreeToNodesAndEdges = (tree: TreeNode[]) => {
@@ -42,6 +43,19 @@ const convertTreeToNodesAndEdges = (tree: TreeNode[]) => {
   tree.forEach((node) => traverse(node));
 
   return { nodes, edges };
+};
+
+const traverse = (nodes: TreeNode[], targetId: string): TreeNode | null => {
+  for (const node of nodes) {
+    if (node.config.name === targetId) {
+      return node;
+    }
+    if (node.children) {
+      const found = traverse(node.children, targetId);
+      if (found) return found;
+    }
+  }
+  return null;
 };
 
 
@@ -88,6 +102,10 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
         ranksep: 20, // 可选
         controlPoints: true, // 可选
       },
+
+      modes: {
+        default: ['drag-canvas', ],
+      },
     });
     graph.data({
       nodes,
@@ -95,23 +113,52 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
     });
     graph.render();
 
+    let selectedId = '';
     graph.on('node:click', (event) => {
       const clickedNode = event.item;
       if (!clickedNode) return;
       const nodeModel = clickedNode.getModel();
+      console.log('nodeModel: ', selectedId, nodeModel);
       
-      // Toggle selected state
-      const isSelected = nodeModel.style?.stroke === '#F6BD16';
-      
-      // Update clicked node style
-      graph.updateItem(clickedNode, {
-        style: {
-          ...nodeModel.style,
-          fill: isSelected ? '#C2C8D5' : '#F6BD16',
-          stroke: isSelected ? '#5B8FF9' : '#F6BD16',
-          lineWidth: isSelected ? 1 : 2
+      // Deselect previously selected node
+      if (selectedId) {
+        const prevSelectedNode = graph.findById(selectedId);
+        if (prevSelectedNode) {
+          graph.updateItem(prevSelectedNode, {
+            style: {
+              fill: '#C2C8D5',
+              stroke: '#5B8FF9',
+              lineWidth: 1
+            }
+          });
         }
-      });
+      }
+
+      // Toggle selection
+      if (selectedId === nodeModel.id) {
+        selectedId = '';
+        // Call onClick with null when deselecting
+        if (props.onClick) {
+          props.onClick(null);
+        }
+      } else {
+        selectedId = nodeModel.id as string;
+        graph.updateItem(clickedNode, {
+          style: {
+            fill: '#F6BD16',
+            stroke: '#F6BD16',
+            lineWidth: 2
+          }
+        });
+        
+        // Call the onClick prop if it exists
+        if (props.onClick) {
+          const clickedTreeNode = traverse(props.data, nodeModel.id as string);
+          if (clickedTreeNode) {
+            props.onClick(clickedTreeNode);
+          }
+        }
+      }
 
       graph.layout();
     });
@@ -120,7 +167,7 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
     return () => {
       graph.destroy();
     };
-  }, [width, height, props.data]);
+  }, [width, height, props.data, props.onClick]);
 
   return <div id="container" style={{ width, height }} />;
 };

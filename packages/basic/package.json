@@ -1,5 +1,5 @@
 {
-  "name": "@polymita/basic",
+  "name": "@polymita/component-basic",
   "version": "0.0.1",
   "description": "A react library developed with dumi",
   "module": "dist/index.js",
@@ -72,6 +72,9 @@
   },
   "dependencies": {
     "@antv/g6": "4",
-    "@antv/g6-react-node": "^1.4.8"
+    "@antv/g6-react-node": "^1.4.8",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.4"
   }
 }

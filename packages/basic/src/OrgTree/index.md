@@ -3,9 +3,12 @@
 This is an example component.
 
 ```jsx
-import { OrgTree } from '@polymita/basic';
+import { OrgTree } from '@polymita/component-basic';
 
 export default () => <OrgTree  
+  onClick={(n) => {
+    console.log(n)
+  }}
   data={[
     {
       id: '1',
