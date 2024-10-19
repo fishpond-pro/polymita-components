@@ -24,7 +24,14 @@ export default () => <TalentPanel
           config: { 
             name: 'CTO',
             version: '@1.0',
-            author: 'Jane Smith'
+            author: 'Jane Smith',
+            settings: [
+              {
+                path: 'a.b.c',
+                label: '配置名',
+                value: '123'
+              }
+            ]
           },
           children: [
             {

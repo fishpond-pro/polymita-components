@@ -6,6 +6,11 @@ export interface TreeNode {
     name: string;
     version: string;
     author: string;
+    settings?: {
+      path: string;
+      label: string;
+      value: string;
+    }[]
   };
   children?: TreeNode[];
 

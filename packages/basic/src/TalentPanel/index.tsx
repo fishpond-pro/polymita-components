@@ -12,6 +12,16 @@ const Dialog = (props: {
   onClose: () => void
 }) => {
   const { selectedNode, onClose } = props
+
+  const settings = selectedNode.config.settings || [];
+
+  const [formData, setFormData] = useState<Record<string, string>>(
+    settings.reduce((acc, setting) => {
+      acc[setting.path] = setting.value;
+      return acc;
+    }, {} as Record<string, string>)
+  );
+
   return (
     <div
       style={{
@@ -38,6 +48,9 @@ const Dialog = (props: {
           borderRadius: '8px',
           maxWidth: '500px',
           width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
         }}
       >
         <h2>Node Details</h2>
@@ -68,15 +81,43 @@ const Dialog = (props: {
               variant="outlined"
             />
           </div>
+
+          {settings.map((setting) => (
+            <div key={setting.path} style={{ width: '100%' }}>
+              <TextField 
+                label={setting.label || setting.path} 
+                value={formData[setting.path] || ''} 
+                style={{ flex: 1 }} 
+                margin="normal" 
+                variant="outlined" 
+                onChange={(e) => {
+                  setFormData({ ...formData, [setting.path]: e.target.value });
+                }}
+              />
+            </div>
+          ))}
         </form>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={onClose}
-          style={{ marginTop: '20px' }}
-        >
-          Close
-        </Button>
+
+        <div style={{
+          marginTop: '20px',
+          display: 'flex', 
+          justifyContent: 'flex-end',
+          gap: '10px'
+        }}>
+          <Button
+            variant="contained"
+            color="primary"
+          >
+            Override
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={onClose}
+          >
+            Submit
+          </Button>
+        </div>
       </div>
     </div>
   );
