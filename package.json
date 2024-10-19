@@ -1,0 +1,21 @@
+{
+  "name": "polymita-components",
+  "version": "0.0.0",
+  "description": "polymita-components",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fishpond-pro/polymita-components.git"
+  },
+  "scripts": {
+    "build:all": "pnpm --recursive run build"
+  },
+  "author": "zhou-yg",
+  "bugs": {
+    "url": "https://github.com/fishpond-pro/polymita-components/issues"
+  },
+  "homepage": "https://github.com/fishpond-pro/polymita-components#readme",
+  "volta": {
+    "node": "20.11.1",
+    "pnpm": "8.15.9"
+  }
+}

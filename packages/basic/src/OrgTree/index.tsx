@@ -1,5 +1,5 @@
-import React, { useEffect, type FC } from 'react';
-import { Graph, EdgeConfig, TreeGraphData, registerNode} from '@antv/g6';
+import React, { useEffect, useRef, type FC } from 'react';
+import { Graph, EdgeConfig, TreeGraphData, registerNode, Item} from '@antv/g6';
 
 export interface TreeNode {
   config: {
@@ -8,6 +8,7 @@ export interface TreeNode {
     author: string;
   };
   children?: TreeNode[];
+
 }
 
 export interface OrgTreeProps {
@@ -15,6 +16,10 @@ export interface OrgTreeProps {
   width?: number;
   height?: number;
   onClick?: (node: TreeNode | null) => void;
+
+  selectedId?: string;
+  onChangeSelectedId?: (nodeId: string) => void;
+
 }
 
 const convertTreeToNodesAndEdges = (tree: TreeNode[]) => {
@@ -67,6 +72,58 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
   const width = props.width || defaultWidth;
   const height = props.height || defaultHeight;
 
+  const { selectedId, onChangeSelectedId } = props;
+
+  const graphRef = useRef<Graph | null>(null);
+
+  const selectedIdRef = useRef<string>('');
+
+  const updateSelectStyle = (selectedId?: string) => {
+    const graph = graphRef.current;
+    if (!graph) return;
+
+    const prevSelectedNode = graph.findById(selectedIdRef.current);
+    if (prevSelectedNode) {
+      graph.updateItem(prevSelectedNode, {
+        style: {
+          lineWidth: 1
+        }
+      });
+    }
+    selectedIdRef.current = selectedId || '';
+
+    if (!selectedId) return;
+
+    const node = graph.findById(selectedId);
+    if (node) {
+      graph.updateItem(node, {
+        style: {
+          // fill: '#C2C8D5',
+          stroke: '#5B8FF9',
+          lineWidth: 4
+        }
+      });
+    }
+
+    graph.layout();
+  }
+
+
+  
+  const changeSelectedNode = (clickedNode: Item) => {
+    const graph = graphRef.current;
+    if (!graph) return;
+
+    const node = traverse(props.data, clickedNode.getModel().id as string);
+    if (node) {
+      props.onClick?.(node);
+    }
+  }
+
+  useEffect(() => {
+    updateSelectStyle(selectedId);
+  }, [selectedId]);
+
   useEffect(() => {
     const { nodes, edges } = convertTreeToNodesAndEdges(props.data);
     
@@ -113,52 +170,15 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
     });
     graph.render();
 
-    let selectedId = '';
+    graphRef.current = graph;
+
     graph.on('node:click', (event) => {
       const clickedNode = event.item;
       if (!clickedNode) return;
-      const nodeModel = clickedNode.getModel();
-      console.log('nodeModel: ', selectedId, nodeModel);
-      
-      // Deselect previously selected node
-      if (selectedId) {
-        const prevSelectedNode = graph.findById(selectedId);
-        if (prevSelectedNode) {
-          graph.updateItem(prevSelectedNode, {
-            style: {
-              fill: '#C2C8D5',
-              stroke: '#5B8FF9',
-              lineWidth: 1
-            }
-          });
-        }
-      }
 
-      // Toggle selection
-      if (selectedId === nodeModel.id) {
-        selectedId = '';
-        // Call onClick with null when deselecting
-        if (props.onClick) {
-          props.onClick(null);
-        }
-      } else {
-        selectedId = nodeModel.id as string;
-        graph.updateItem(clickedNode, {
-          style: {
-            fill: '#F6BD16',
-            stroke: '#F6BD16',
-            lineWidth: 2
-          }
-        });
-        
-        // Call the onClick prop if it exists
-        if (props.onClick) {
-          const clickedTreeNode = traverse(props.data, nodeModel.id as string);
-          if (clickedTreeNode) {
-            props.onClick(clickedTreeNode);
-          }
-        }
-      }
+      updateSelectStyle(clickedNode.getModel().id as string);
+
+      changeSelectedNode(clickedNode);
 
       graph.layout();
     });
@@ -167,7 +187,7 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
     return () => {
       graph.destroy();
     };
-  }, [width, height, props.data, props.onClick]);
+  }, [width, height, props.data]);
 
   return <div id="container" style={{ width, height }} />;
 };
