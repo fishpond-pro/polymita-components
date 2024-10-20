@@ -5,13 +5,16 @@ import { TextField, Button } from '@mui/material';
 
 export interface TalentPanelProps extends Omit<OrgTreeProps, 'onNodeClick'> {
   // Additional props specific to TalentPanel can be added here
+  onSubmit: (data: Record<string, string>) => void
+  onOverride: () => void
 }
 
 const Dialog = (props: {
   selectedNode: TreeNode
-  onClose: () => void
+  onSubmit: (data: Record<string, string>) => void
+  onOverride: () => void
 }) => {
-  const { selectedNode, onClose } = props
+  const { selectedNode, onSubmit, onOverride } = props
 
   const settings = selectedNode.config.settings || [];
 
@@ -107,13 +110,16 @@ const Dialog = (props: {
           <Button
             variant="contained"
             color="primary"
+            onClick={onOverride}
           >
             Override
           </Button>
           <Button
             variant="contained"
             color="primary"
-            onClick={onClose}
+            onClick={() => {
+              onSubmit(formData)
+            }}
           >
             Submit
           </Button>
@@ -133,6 +139,21 @@ const TalentPanel: FC<TalentPanelProps> = (props) => {
     setSelectedNodeId(node?.config.name || '');
   };
 
+  const closeDialog = () => {
+    setSelectedNode(null)
+    setSelectedNodeId('')
+  }
+
+  const handleSubmit = (data: Record<string, string>) => {
+    closeDialog()
+    props.onSubmit(data)
+  }
+
+  const handleOverride = () => {
+    closeDialog()
+    props.onOverride()
+  }
+
   return (
     <>
       <OrgTree 
@@ -145,10 +166,8 @@ const TalentPanel: FC<TalentPanelProps> = (props) => {
         <Dialog 
           key={selectedNode?.config?.name}
           selectedNode={selectedNode}
-          onClose={() => {
-            setSelectedNode(null)
-            setSelectedNodeId('')
-          }}
+          onSubmit={handleSubmit}
+          onOverride={handleOverride}
         />
       )}
     </>

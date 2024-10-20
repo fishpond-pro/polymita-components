@@ -77,7 +77,7 @@ const OrgTree: FC<OrgTreeProps> = (props) => {
   const width = props.width || defaultWidth;
   const height = props.height || defaultHeight;
 
-  const { selectedId, onChangeSelectedId } = props;
+  const { selectedId } = props;
 
   const graphRef = useRef<Graph | null>(null);
 

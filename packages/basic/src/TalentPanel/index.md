@@ -9,6 +9,12 @@ export default () => <TalentPanel
   onClick={(n) => {
     console.log(n)
   }}
+  onSubmit={r => {
+    console.log('submit:', r)
+  }}
+  onOverride={() => {
+    console.log('override')
+  }}
   data={[
     {
       id: '1',
